@@ -1,0 +1,6 @@
+{
+	"name": "m1911",
+	"ammo": "dynamic_guns:45_apc",
+	"mag_size": 8,
+	"fire_rate": 15
+}
