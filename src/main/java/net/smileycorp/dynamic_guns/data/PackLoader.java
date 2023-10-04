@@ -13,8 +13,10 @@ import java.io.PushbackInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class PackLoader {
 
@@ -60,6 +62,10 @@ public class PackLoader {
         } catch (Exception e) {
             DynamicGunsLogger.logError("Failed to load pack " + mod.getFileName(), e);
         }
+    }
+
+    public static Stream<GunPack> getLoadedPacks() {
+        return loaded_packs.values().stream();
     }
 
 }

@@ -3,28 +3,29 @@ package net.smileycorp.dynamic_guns.item;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.smileycorp.dynamic_guns.DynamicGunsLogger;
+import net.smileycorp.dynamic_guns.gun.GunProperties;
 
 import java.util.Locale;
 
 
-public class AmmoItem extends Item implements CreativeTabsProvider {
+public class GunItem extends Item implements CreativeTabsProvider {
 
     private final boolean enchanted;
     private final ResourceLocation creative_tab;
+    private final GunProperties gun_props;
 
-    private AmmoItem(Properties props, boolean enchanted, ResourceLocation creative_tab) {
+    private GunItem(Properties props, boolean enchanted, ResourceLocation creative_tab, GunProperties gun_props) {
         super(props);
         this.enchanted = enchanted;
         this.creative_tab = creative_tab;
+        this.gun_props = gun_props;
     }
 
     @Override
@@ -37,9 +38,12 @@ public class AmmoItem extends Item implements CreativeTabsProvider {
         return tab.location().equals(creative_tab);
     }
 
-    public static AmmoItem deserialize(JsonObject obj) {
-        Properties props = new Properties();
-        if (obj.has("stacks_to")) props.stacksTo(obj.get("stack_size").getAsInt());
+    public GunProperties getProperties() {
+        return gun_props;
+    }
+
+    public static GunItem deserialize(JsonObject obj) {
+        Properties props = new Properties().setNoRepair().stacksTo(1);
         if (obj.has("rarity")) {
             JsonPrimitive value = obj.get("rarity").getAsJsonPrimitive();
             Rarity rarity = null;
@@ -55,7 +59,7 @@ public class AmmoItem extends Item implements CreativeTabsProvider {
         boolean enchanted = obj.has("enchanted") ? obj.get("enchanted").getAsBoolean() : false;
         if (obj.has("fire_resistant") && obj.get("fire_resistant").getAsBoolean()) props.fireResistant();
         ResourceLocation creative_tab = obj.has("creative_tab") ? ResourceLocation.tryParse(obj.get("creative_tab").getAsString()) : null;
-        return new AmmoItem(props, enchanted, creative_tab);
+        return new GunItem(props, enchanted, creative_tab, GunProperties.deserialize(obj));
     }
 
 }
