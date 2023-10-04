@@ -1,7 +1,9 @@
 package net.smileycorp.dynamic_guns.data;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.forgespi.locating.IModFile;
 import net.smileycorp.dynamic_guns.DynamicGunsLogger;
@@ -12,11 +14,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Map;
 
 public class PackLoader {
 
     public static final File GUNS_FOLDER = FMLPaths.GAMEDIR.get().resolve("guns").toFile();
-    private static final List<GunPack> loaded_packs = Lists.newArrayList();
+    private static final Map<String, GunPack> loaded_packs = Maps.newHashMap();
 
     public static void reload() {
         if (!GUNS_FOLDER.isDirectory()) {
@@ -33,9 +36,11 @@ public class PackLoader {
 
     private static void tryLoadPack(Path path) {
         try {
+            DynamicGunsLogger.logInfo("Trying to load pack " + path.getFileName());
             if (!path.resolve("pack-info.json").toFile().isFile()) return;
-            loaded_packs.add(GunPack.fromPath(path));
-            DynamicGunsLogger.logInfo("Loaded pack " + path.getFileName());
+            GunPack pack = GunPack.fromPath(path, false);
+            loaded_packs.put(pack.getPackInfo().getName(), pack);
+            DynamicGunsLogger.logInfo("Loaded pack " + pack.getPackInfo().toString());
         } catch (Exception e) {
             DynamicGunsLogger.logError("Failed to load pack " + path.getFileName(), e);
         }
@@ -43,12 +48,15 @@ public class PackLoader {
 
     private static void tryLoadPack(IModFile mod) {
         try {
+            //check to see if file exists in jar
             PushbackInputStream stream = new PushbackInputStream(Files.newInputStream(mod.findResource("gunpack/pack-info.json"), StandardOpenOption.READ));
             stream.unread(stream.read());
         } catch (Exception e) { return; }
         try {
-            loaded_packs.add(GunPack.fromMod(mod));
-            DynamicGunsLogger.logInfo("Loaded pack " + mod.getFileName());
+            DynamicGunsLogger.logInfo("Trying to load pack " + mod.getFileName());
+            GunPack pack = GunPack.fromPath(mod.findResource("gunpack"), true);
+            loaded_packs.put(pack.getPackInfo().getName(), pack);
+            DynamicGunsLogger.logInfo("Loaded pack " + pack.getPackInfo().toString());
         } catch (Exception e) {
             DynamicGunsLogger.logError("Failed to load pack " + mod.getFileName(), e);
         }

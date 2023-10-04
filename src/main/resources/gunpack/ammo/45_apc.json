@@ -1,5 +1,8 @@
 {
-	"name": "45_apc"
+	"name": "45_apc",
+	"stack_size": 64,
 	"rarity": "COMMON",
-	"stack_size": 64
+	"enchanted": false,
+	"fire_resistant": false,
+	"creative_tab": "minecraft:combat"
 }
