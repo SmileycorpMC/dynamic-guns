@@ -6,9 +6,7 @@ import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.resource.PathPackResources;
-import net.smileycorp.dynamic_guns.data.GunPack;
 import net.smileycorp.dynamic_guns.data.PackInfo;
 import net.smileycorp.dynamic_guns.data.PackLoader;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.nio.file.Path;
 import java.util.function.Consumer;
 
 @Mixin(BuiltInPackSource.class)

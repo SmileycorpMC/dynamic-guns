@@ -5,7 +5,8 @@
 	"refmap": "dynamic-guns.refmap.json",
     "client": [],
 	"mixins": [
-      "MixinBuiltInPackSource"
+      	"MixinBuiltInPackSource",
+		"MixinProjectile"
     ],
 	"minVersion": "0.8"
 }

@@ -5,42 +5,26 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.ChatFormatting;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.Rarity;
 
 import java.util.Locale;
 
 
-public class MeleeItem extends Item implements CreativeTabsProvider {
-
-    private final boolean enchanted;
-    private final ResourceLocation creative_tab;
+public class MeleeItem extends JsonItem {
 
     private final Multimap<Attribute, AttributeModifier> modifiers;
 
     private MeleeItem(Properties props, boolean enchanted, ResourceLocation creative_tab, float damage, float speed) {
-        super(props);
-        this.enchanted = enchanted;
-        this.creative_tab = creative_tab;
+        super(props, enchanted, creative_tab);
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
         builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
         builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
         modifiers = builder.build();
-    }
-
-    @Override
-    public boolean isFoil(ItemStack stack) {
-        return enchanted || stack.isEnchanted();
-    }
-
-    @Override
-    public boolean canAddToTab(ResourceKey<CreativeModeTab> tab) {
-        return tab.location().equals(creative_tab);
     }
 
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot p_43274_) {

@@ -2,19 +2,22 @@ package net.smileycorp.dynamic_guns.data;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.smileycorp.dynamic_guns.DynamicGunsLogger;
-import net.smileycorp.dynamic_guns.item.AmmoItem;
-import net.smileycorp.dynamic_guns.item.CreativeTabsProvider;
 import net.smileycorp.dynamic_guns.item.GunItem;
+import net.smileycorp.dynamic_guns.item.JsonItem;
 import net.smileycorp.dynamic_guns.item.MeleeItem;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -36,7 +39,7 @@ public class GunPack {
     }
 
     private void addAmmoItem(String name, JsonObject obj) {
-        register.register(name, () -> AmmoItem.deserialize(obj));
+        register.register(name, () -> JsonItem.deserialize(obj));
     }
 
     private void addGunItem(String name, JsonObject obj) {
@@ -49,14 +52,23 @@ public class GunPack {
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         for (RegistryObject<Item> item : register.getEntries()) {
-            if (!item.isPresent() || !(item.get() instanceof CreativeTabsProvider)) continue;
-            if (((CreativeTabsProvider) item.get()).canAddToTab(event.getTabKey())) event.accept(item.get());
+            if (!item.isPresent() || !(item.get() instanceof JsonItem)) continue;
+            if (((JsonItem) item.get()).canAddToTab(event.getTabKey())) {
+                if (item.get() instanceof GunItem) {
+                    ItemStack stack = new ItemStack(item.get());
+                    CompoundTag nbt = new CompoundTag();
+                    nbt.putInt("ammo", 0);
+                    stack.setTag(nbt);
+                    event.accept(stack);
+                }
+                else event.accept(item.get());
+            }
         }
     }
 
     public static GunPack fromPath(Path path, boolean from_mod) throws Exception {
         GunPack pack = new GunPack(PackInfo.deserialize(readJsonFromStream(path.resolve("pack-info.json")), path, from_mod));
-        readAmmoItems(pack, path.resolve("ammo"));
+        readAmmoItems(pack, path.resolve("items"));
         readGunItems(pack, path.resolve("guns"));
         readMeleeItems(pack, path.resolve("melee"));
         return pack;
@@ -73,9 +85,9 @@ public class GunPack {
                 JsonObject obj = readJsonFromStream(p);
                 String name = obj.get("name").getAsString();
                 pack.addAmmoItem(name, obj);
-                DynamicGunsLogger.logInfo("Loaded ammo item " + name);
+                DynamicGunsLogger.logInfo("Loaded item " + name);
             } catch (Exception e) {
-                DynamicGunsLogger.logError("Failed to load ammo item " + p.getFileName(), e);
+                DynamicGunsLogger.logError("Failed to load item " + p.getFileName(), e);
             }
         });
     }

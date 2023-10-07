@@ -4,24 +4,30 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.smileycorp.dynamic_guns.entity.DynamicGunsProjectile;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 public class GunProperties {
 
     private final Item ammo;
     private final EntityType<?> projectile;
     private FireMode fire_mode = FireMode.SINGLE_SHOT;
-    private double projectile_speed = 5f;
+    private float projectile_speed = 5;
+    private float spread = 0;
     private int ammo_per_item = 1;
     private int mag_size = 1;
     private int fire_rate = 20;
@@ -40,6 +46,21 @@ public class GunProperties {
 
     public boolean isAmmo(ItemStack stack) {
         return stack.is(ammo);
+    }
+
+    public Projectile createProjectile(Level level, LivingEntity entity) {
+        Projectile projectile = (Projectile) this.projectile.create(level);
+        projectile.setOwner(entity);
+        projectile.setPos(new Vec3(entity.getX(), entity.getY() - 0.15D, entity.getZ()));
+        Vec3 dir = entity.getLookAngle();
+        projectile.shoot(dir.x, dir.y, dir.z, projectile_speed, spread);
+        level.addFreshEntity(projectile);
+        ((DynamicGunsProjectile)projectile).setDamage(damage);
+        return projectile;
+    }
+
+    public Component getAmmoName() {
+        return ammo.getName(new ItemStack(ammo));
     }
 
     public FireMode getFireMode() {
@@ -98,7 +119,8 @@ public class GunProperties {
         if (obj.has("fire_mode")) try {
             props.fire_mode = FireMode.valueOf(obj.get("fire_mode").getAsString().toUpperCase(Locale.US));
         } catch (Exception e) {}
-        if (obj.has("projectile_speed")) props.projectile_speed = obj.get("projectile_speed").getAsDouble();
+        if (obj.has("projectile_speed")) props.projectile_speed = obj.get("projectile_speed").getAsFloat();
+        if (obj.has("spread")) props.projectile_speed = obj.get("spread").getAsFloat();
         if (obj.has("ammo_per_item")) props.ammo_per_item = obj.get("ammo_per_item").getAsInt();
         if (obj.has("mag_size")) props.mag_size = obj.get("mag_size").getAsInt();
         if (obj.has("fire_rate")) props.fire_rate = obj.get("fire_rate").getAsInt();

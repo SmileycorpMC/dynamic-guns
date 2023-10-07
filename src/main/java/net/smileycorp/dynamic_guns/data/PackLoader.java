@@ -1,9 +1,7 @@
 package net.smileycorp.dynamic_guns.data;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.forgespi.locating.IModFile;
 import net.smileycorp.dynamic_guns.DynamicGunsLogger;
@@ -13,8 +11,6 @@ import java.io.PushbackInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
