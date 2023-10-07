@@ -8,9 +8,8 @@ import net.smileycorp.dynamic_guns.DynamicGunsLogger;
 
 import java.io.File;
 import java.io.PushbackInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -29,30 +28,44 @@ public class PackLoader {
     public static void loadPacks() {
         loaded_packs.clear();
         for(String dir : GUNS_FOLDER.list()) tryLoadPack(GUNS_FOLDER.toPath().resolve(dir));
-        ModList.get().forEachModFile(file -> tryLoadPack(file));
+        ModList.get().forEachModFile(PackLoader::tryLoadPack);
     }
 
     private static void tryLoadPack(Path path) {
-        try {
-            DynamicGunsLogger.logInfo("Trying to load pack " + path.getFileName());
-            if (!path.resolve("pack-info.json").toFile().isFile()) return;
-            GunPack pack = GunPack.fromPath(path, false);
-            loaded_packs.put(pack.getPackInfo().getName(), pack);
-            DynamicGunsLogger.logInfo("Loaded pack " + pack.getPackInfo().toString());
-        } catch (Exception e) {
-            DynamicGunsLogger.logError("Failed to load pack " + path.getFileName(), e);
+        DynamicGunsLogger.logInfo("Trying to load pack " + path.getFileName());
+        if (path.toFile().isFile()) {
+            try (FileSystem zip = FileSystems.newFileSystem(path,  Collections.emptyMap())){
+                try {
+                    //check to see if file exists in zip
+                    PushbackInputStream stream = new PushbackInputStream(Files.newInputStream(zip.getPath("pack-info.json"), StandardOpenOption.READ));
+                    stream.unread(stream.read());
+                } catch (Exception e) {
+                    DynamicGunsLogger.logError("Failed to load pack ", e);
+                    return;
+                }
+                GunPack pack = GunPack.fromPath(zip.getPath("/"), path, true);
+                loaded_packs.put(pack.getPackInfo().getName(), pack);
+                DynamicGunsLogger.logInfo("Loaded pack " + pack.getPackInfo().toString());
+            } catch (Exception e) {
+                DynamicGunsLogger.logError("Failed to load pack " + path.getFileName(), e);
+            }
+        } else {
+            try {
+                if (!path.resolve("pack-info.json").toFile().isFile()) return;
+                GunPack pack = GunPack.fromPath(path, path, false);
+                loaded_packs.put(pack.getPackInfo().getName(), pack);
+                DynamicGunsLogger.logInfo("Loaded pack " + pack.getPackInfo().toString());
+            } catch (Exception e) {
+                DynamicGunsLogger.logError("Failed to load pack " + path.getFileName(), e);
+            }
         }
     }
 
     private static void tryLoadPack(IModFile mod) {
-        try {
-            //check to see if file exists in jar
-            PushbackInputStream stream = new PushbackInputStream(Files.newInputStream(mod.findResource("gunpack/pack-info.json"), StandardOpenOption.READ));
-            stream.unread(stream.read());
-        } catch (Exception e) { return; }
+        if (!Files.isDirectory(mod.findResource("gunpack"))) return;
         try {
             DynamicGunsLogger.logInfo("Trying to load pack " + mod.getFileName());
-            GunPack pack = GunPack.fromPath(mod.findResource("gunpack"), true);
+            GunPack pack = GunPack.fromPath(mod.findResource("gunpack"), mod.getFilePath(), true);
             loaded_packs.put(pack.getPackInfo().getName(), pack);
             DynamicGunsLogger.logInfo("Loaded pack " + pack.getPackInfo().toString());
         } catch (Exception e) {

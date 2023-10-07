@@ -7,6 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.forgespi.locating.IModFile;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -21,33 +22,39 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.function.Function;
 
 public class GunPack {
 
     private final PackInfo info;
     private final DeferredRegister<Item> register;
 
-    private GunPack(PackInfo info) {
+    private GunPack(PackInfo info, Path resources) throws Exception {
         this.info = info;
         register = DeferredRegister.create(ForgeRegistries.ITEMS, info.getName());
         register.register(FMLJavaModLoadingContext.get().getModEventBus());
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::addCreative);
+        readItems(resources.resolve("items"), JsonItem::deserialize);
+        readItems(resources.resolve("guns"), GunItem::deserialize);
+        readItems(resources.resolve("melee"), MeleeItem::deserialize);
     }
 
     public PackInfo getPackInfo() {
         return info;
     }
 
-    private void addAmmoItem(String name, JsonObject obj) {
-        register.register(name, () -> JsonItem.deserialize(obj));
-    }
-
-    private void addGunItem(String name, JsonObject obj) {
-        register.register(name, () -> GunItem.deserialize(obj));
-    }
-
-    private void addMeleeItem(String name, JsonObject obj) {
-        register.register(name, () -> MeleeItem.deserialize(obj));
+    private void readItems(Path path, Function<JsonObject, Item> factory) throws Exception {
+        Files.find(path, Integer.MAX_VALUE, (matcher, options) -> options.isRegularFile()).forEach(p -> {
+            try {
+                InputStream stream = Files.newInputStream(p, StandardOpenOption.READ);
+                JsonObject obj = JsonParser.parseReader(new BufferedReader(new InputStreamReader(stream))).getAsJsonObject();
+                String name = obj.get("name").getAsString();
+                register.register(name, () -> factory.apply(obj));
+                DynamicGunsLogger.logInfo("Loaded item " + name);
+            } catch (Exception e) {
+                DynamicGunsLogger.logError("Failed to load item " + p.getFileName(), e);
+            }
+        });
     }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
@@ -66,56 +73,14 @@ public class GunPack {
         }
     }
 
-    public static GunPack fromPath(Path path, boolean from_mod) throws Exception {
-        GunPack pack = new GunPack(PackInfo.deserialize(readJsonFromStream(path.resolve("pack-info.json")), path, from_mod));
-        readAmmoItems(pack, path.resolve("items"));
-        readGunItems(pack, path.resolve("guns"));
-        readMeleeItems(pack, path.resolve("melee"));
-        return pack;
+    public static GunPack fromPath(Path resources, Path location, boolean is_archive) throws Exception {
+        InputStream stream = Files.newInputStream(resources.resolve("pack-info.json"), StandardOpenOption.READ);
+        return new GunPack(PackInfo.deserialize(JsonParser.parseReader(new BufferedReader(new InputStreamReader(stream))).getAsJsonObject(),
+                location, is_archive), resources);
     }
 
-    private static JsonObject readJsonFromStream(Path path) throws Exception {
-        InputStream stream = Files.newInputStream(path, StandardOpenOption.READ);
-        return JsonParser.parseReader(new BufferedReader(new InputStreamReader(stream))).getAsJsonObject();
-    }
-
-    private static void readAmmoItems(GunPack pack, Path path) throws Exception {
-        Files.find(path, Integer.MAX_VALUE, (matcher, options) -> options.isRegularFile()).forEach(p -> {
-            try {
-                JsonObject obj = readJsonFromStream(p);
-                String name = obj.get("name").getAsString();
-                pack.addAmmoItem(name, obj);
-                DynamicGunsLogger.logInfo("Loaded item " + name);
-            } catch (Exception e) {
-                DynamicGunsLogger.logError("Failed to load item " + p.getFileName(), e);
-            }
-        });
-    }
-
-    private static void readGunItems(GunPack pack, Path path) throws Exception {
-        Files.find(path, Integer.MAX_VALUE, (matcher, options) -> options.isRegularFile()).forEach(p -> {
-            try {
-                JsonObject obj = readJsonFromStream(p);
-                String name = obj.get("name").getAsString();
-                pack.addGunItem(name, obj);
-                DynamicGunsLogger.logInfo("Loaded gun item " + name);
-            } catch (Exception e) {
-                DynamicGunsLogger.logError("Failed to load gun item " + p.getFileName(), e);
-            }
-        });
-    }
-
-    private static void readMeleeItems(GunPack pack, Path path) throws Exception {
-        Files.find(path, Integer.MAX_VALUE, (matcher, options) -> options.isRegularFile()).forEach(p -> {
-            try {
-                JsonObject obj = readJsonFromStream(p);
-                String name = obj.get("name").getAsString();
-                pack.addMeleeItem(name, obj);
-                DynamicGunsLogger.logInfo("Loaded melee item " + name);
-            } catch (Exception e) {
-                DynamicGunsLogger.logError("Failed to load melee item " + p.getFileName(), e);
-            }
-        });
+    public static GunPack fromMod(Path resources, IModFile file) throws Exception {
+        return new GunPack(PackInfo.forMod(file), resources);
     }
 
 }

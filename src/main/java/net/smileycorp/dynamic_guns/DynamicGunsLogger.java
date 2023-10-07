@@ -37,8 +37,8 @@ public class DynamicGunsLogger {
     }
 
     public static void logError(Object message, Exception e) {
-        writeToFile(e);
-        writeToFile(message);
+        writeToFile(message + " " + e);
+        for (StackTraceElement traceElement : e.getStackTrace()) writeToFile(traceElement);
         logger.error(message, e);
         e.printStackTrace();
         has_errors = true;
