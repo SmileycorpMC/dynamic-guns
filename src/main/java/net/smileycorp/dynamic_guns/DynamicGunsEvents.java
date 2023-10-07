@@ -14,7 +14,7 @@ public class DynamicGunsEvents {
         if (event.getEntity() == null || event.getEntity().level().isClientSide) return;
         DamageSource source = event.getSource();
         Entity attacker = source.getDirectEntity();
-        if (attacker instanceof DynamicGunsProjectile) event.setAmount(event.getAmount() * ((DynamicGunsProjectile) attacker).getDamage());
+        if (attacker instanceof DynamicGunsProjectile) event.setAmount(((DynamicGunsProjectile) attacker).getDamage());
     }
 
 }

@@ -70,9 +70,8 @@ public class GunItem extends JsonItem implements GeoItem {
 
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
-        if (entity instanceof Player &! ((Player)entity).getCooldowns().isOnCooldown(this)) {
-            fire(stack, entity.level(), entity);
-        }
+        if (entity instanceof Player && ((Player)entity).getCooldowns().isOnCooldown(this)) return false;
+        fire(stack, entity.level(), entity);
         return false;
     }
 
@@ -108,11 +107,14 @@ public class GunItem extends JsonItem implements GeoItem {
     public void fire(ItemStack stack, Level level, LivingEntity entity) {
         if (level.isClientSide) return;
         int ammo = getAmmoCount(stack);
-        if (ammo <= 0) entity.playSound(properties.getEmptySound());
-        setAmmoCount(stack, ammo - 1);
+        if (entity instanceof Player) ((Player) entity).getCooldowns().addCooldown(this, properties.getFireRate());
+        if (ammo <= 0) {
+            entity.playSound(properties.getEmptySound());
+            return;
+        }
+        if (properties.getMagSize() > 0 && (!(entity instanceof Player) || !((Player) entity).isCreative())) setAmmoCount(stack, ammo - 1);
         properties.createProjectile(level, entity);
         entity.playSound(properties.getFireSound());
-        if (entity instanceof Player) ((Player) entity).getCooldowns().addCooldown(this, properties.getFireRate());
     }
 
     public static int getAmmoCount(ItemStack stack) {

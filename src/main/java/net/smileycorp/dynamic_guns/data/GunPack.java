@@ -64,7 +64,7 @@ public class GunPack {
                 if (item.get() instanceof GunItem) {
                     ItemStack stack = new ItemStack(item.get());
                     CompoundTag nbt = new CompoundTag();
-                    nbt.putInt("ammo", 0);
+                    nbt.putInt("ammo", ((GunItem) item.get()).getProperties().getMagSize());
                     stack.setTag(nbt);
                     event.accept(stack);
                 }

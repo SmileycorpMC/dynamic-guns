@@ -51,11 +51,11 @@ public class GunProperties {
     public Projectile createProjectile(Level level, LivingEntity entity) {
         Projectile projectile = (Projectile) this.projectile.create(level);
         projectile.setOwner(entity);
-        projectile.setPos(new Vec3(entity.getX(), entity.getY() - 0.15D, entity.getZ()));
+        projectile.setPos(new Vec3(entity.getX(), entity.getY() + entity.getEyeHeight(), entity.getZ()));
         Vec3 dir = entity.getLookAngle();
-        projectile.shoot(dir.x, dir.y, dir.z, projectile_speed, spread);
-        level.addFreshEntity(projectile);
+        projectile.shoot(dir.x, dir.y, dir.z, projectile_speed * 3f, 1 + spread);
         ((DynamicGunsProjectile)projectile).setDamage(damage);
+        level.addFreshEntity(projectile);
         return projectile;
     }
 

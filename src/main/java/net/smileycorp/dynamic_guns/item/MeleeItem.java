@@ -6,10 +6,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.ChatFormatting;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
 import java.util.Locale;
@@ -18,17 +21,30 @@ import java.util.Locale;
 public class MeleeItem extends JsonItem {
 
     private final Multimap<Attribute, AttributeModifier> modifiers;
+    private final boolean disables_shields;
 
-    private MeleeItem(Properties props, boolean enchanted, ResourceLocation creative_tab, float damage, float speed) {
+    private MeleeItem(Properties props, boolean enchanted, ResourceLocation creative_tab, float damage, float speed, boolean disables_shields) {
         super(props, enchanted, creative_tab);
         ImmutableMultimap.Builder<Attribute, AttributeModifier> builder = ImmutableMultimap.builder();
         builder.put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", damage, AttributeModifier.Operation.ADDITION));
         builder.put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", speed, AttributeModifier.Operation.ADDITION));
         modifiers = builder.build();
+        this.disables_shields = disables_shields;
     }
 
     public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot p_43274_) {
         return p_43274_ == EquipmentSlot.MAINHAND ? modifiers: super.getDefaultAttributeModifiers(p_43274_);
+    }
+
+    @Override
+    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity user) {
+        if (stack.isDamageableItem()) stack.hurt(1, user.getRandom(), user instanceof ServerPlayer ? (ServerPlayer) user : null);
+        return super.hurtEnemy(stack, target, user);
+    }
+
+    @Override
+    public boolean canDisableShield(ItemStack stack, ItemStack shield, LivingEntity entity, LivingEntity attacker) {
+        return disables_shields;
     }
 
     public static MeleeItem deserialize(JsonObject obj) {
@@ -55,7 +71,8 @@ public class MeleeItem extends JsonItem {
             if (max_durability >= 0) props.durability(max_durability);
         }
         if (obj.has("can_repair") &! obj.get("can_repair").getAsBoolean()) props.setNoRepair();
-        return new MeleeItem(props, enchanted, creative_tab, damage, speed);
+        boolean disables_shields = (obj.has("disables_shields") && obj.get("disables_shields").getAsBoolean());
+        return new MeleeItem(props, enchanted, creative_tab, damage, speed, disables_shields);
     }
 
 }
