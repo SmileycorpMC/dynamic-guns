@@ -25,7 +25,7 @@ public class GunProperties {
 
     private final Item ammo;
     private final EntityType<?> projectile;
-    private FireMode fire_mode = FireMode.SINGLE_SHOT;
+    private FireMode fire_mode = FireMode.MANUAL;
     private float projectile_speed = 5;
     private float spread = 0;
     private int ammo_per_item = 1;

@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.smileycorp.dynamic_guns.gun.FireMode;
 import net.smileycorp.dynamic_guns.gun.GunAttribute;
 import net.smileycorp.dynamic_guns.gun.GunProperties;
 import software.bernie.geckolib.animatable.GeoItem;
@@ -32,7 +33,8 @@ import java.util.Locale;
 
 public class GunItem extends JsonItem implements GeoItem {
 
-    private static final RawAnimation RELOAD_ANIM = RawAnimation.begin().thenPlay("reload");
+    private static final RawAnimation RELOAD = RawAnimation.begin().thenPlay("reload");
+    private static final RawAnimation CHAMBER = RawAnimation.begin().thenPlay("chamber");
 
     private final GunProperties properties;
 
@@ -113,6 +115,7 @@ public class GunItem extends JsonItem implements GeoItem {
         if (properties.getMagSize() > 0 && (!(entity instanceof Player) || !((Player) entity).isCreative())) setAmmoCount(stack, ammo - 1);
         properties.createProjectile(level, entity);
         entity.playSound(properties.getFireSound());
+        if (properties.getFireMode() ==  FireMode.MANUAL) triggerAnim(entity, GeoItem.getOrAssignId(stack, (ServerLevel) level), "Gun", "chamber");
     }
 
     public static int getAmmoCount(ItemStack stack) {
@@ -133,7 +136,7 @@ public class GunItem extends JsonItem implements GeoItem {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar registry) {
         registry.add(new AnimationController<>(this, "Gun", 0, state -> PlayState.STOP)
-                .triggerableAnim("reload", RELOAD_ANIM));
+                .triggerableAnim("reload", RELOAD).triggerableAnim("chamber", CHAMBER));
     }
 
     @Override

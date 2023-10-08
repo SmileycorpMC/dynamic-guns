@@ -2,7 +2,7 @@ package net.smileycorp.dynamic_guns.gun;
 
 public enum FireMode {
 
-    SINGLE_SHOT,
+    MANUAL,
     SEMI_AUTO,
     FULL_AUTO,
     BURST,
