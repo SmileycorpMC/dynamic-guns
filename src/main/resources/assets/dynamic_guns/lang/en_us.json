@@ -1,4 +1,7 @@
 {
 	"tooltip.dynamic_guns.gun.ammo_count": "%1$s/%2$s Ammo",
-	"tooltip.dynamic_guns.gun.ammo_type": "Uses Ammo: %1$s"
+	"tooltip.dynamic_guns.gun.ammo_type": "Uses Ammo: %1$s",
+
+	"key.category.dynamic_guns": "Dynamic Guns",
+	"key.dynamic_guns.reload": "Reload"
 }

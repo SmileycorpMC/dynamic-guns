@@ -70,8 +70,6 @@ public class GunItem extends JsonItem implements GeoItem {
 
     @Override
     public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
-        if (entity instanceof Player && ((Player)entity).getCooldowns().isOnCooldown(this)) return false;
-        fire(stack, entity.level(), entity);
         return false;
     }
 
