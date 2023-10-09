@@ -23,6 +23,7 @@ import java.util.Map;
 
 public class GunProperties {
 
+    private ResourceLocation location;
     private final Item ammo;
     private final EntityType<?> projectile;
     private FireMode fire_mode = FireMode.MANUAL;
@@ -42,6 +43,14 @@ public class GunProperties {
     public GunProperties(Item ammo, EntityType<?> projectile) {
         this.ammo = ammo;
         this.projectile = projectile;
+    }
+
+    public void setLocation(ResourceLocation location) {
+        this.location = location;
+    }
+
+    public ResourceLocation getLocation() {
+        return location;
     }
 
     public boolean isAmmo(ItemStack stack) {

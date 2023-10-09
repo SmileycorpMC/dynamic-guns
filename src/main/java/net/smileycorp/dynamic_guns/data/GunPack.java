@@ -3,6 +3,7 @@ package net.smileycorp.dynamic_guns.data;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -49,7 +50,11 @@ public class GunPack {
                 InputStream stream = Files.newInputStream(p, StandardOpenOption.READ);
                 JsonObject obj = JsonParser.parseReader(new BufferedReader(new InputStreamReader(stream))).getAsJsonObject();
                 String name = obj.get("name").getAsString();
-                register.register(name, () -> factory.apply(obj));
+                register.register(name, () -> {
+                    Item item = factory.apply(obj);
+                    if (item instanceof GunItem) ((GunItem) item).getProperties().setLocation(new ResourceLocation(info.getName(), name));
+                    return item;
+                });
                 DynamicGunsLogger.logInfo("Loaded item " + name);
             } catch (Exception e) {
                 DynamicGunsLogger.logError("Failed to load item " + p.getFileName(), e);
