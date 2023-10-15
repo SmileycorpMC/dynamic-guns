@@ -37,6 +37,8 @@ public class GunProperties {
     private SoundEvent fire_sound = null;
     private SoundEvent reload_sound = null;
     private SoundEvent empty_sound = null;
+    private DamageFalloff falloff;
+    private float headshot_multiplier;
     private List<GunAttribute> attributes = Lists.newArrayList();
     private Map<String, Object> additional_data = Maps.newHashMap();
 
@@ -63,7 +65,9 @@ public class GunProperties {
         projectile.setPos(new Vec3(entity.getX(), entity.getY() + entity.getEyeHeight(), entity.getZ()));
         Vec3 dir = entity.getLookAngle();
         projectile.shoot(dir.x, dir.y, dir.z, projectile_speed * 3f, 1 + spread);
-        ((DynamicGunsProjectile)projectile).setDamage(damage);
+        ((DynamicGunsProjectile)projectile).setBaseDamage(damage);
+        ((DynamicGunsProjectile) projectile).setCritMultiplier(headshot_multiplier);
+        ((DynamicGunsProjectile)projectile).setFalloff(falloff);
         level.addFreshEntity(projectile);
         return projectile;
     }
@@ -113,6 +117,14 @@ public class GunProperties {
         return empty_sound;
     }
 
+    public DamageFalloff getFalloff() {
+        return falloff;
+    }
+
+    public float getHeadshot_multiplier() {
+        return headshot_multiplier;
+    }
+
     public List<GunAttribute> getAttributes() {
         return attributes;
     }
@@ -144,6 +156,8 @@ public class GunProperties {
         if (obj.has("empty_sound")) try {
             props.empty_sound = SoundEvent.createFixedRangeEvent(new ResourceLocation(obj.get("empty_sound").getAsString()), 0);
         } catch (Exception e) {}
+        if (obj.has("falloff")) props.falloff = DamageFalloff.deserialize(obj.get("falloff").getAsJsonObject());
+        if (obj.has("headshot_multiplier")) props.headshot_multiplier = obj.get("headshot_multiplier").getAsFloat();
         for (JsonElement element : obj.get("attributes").getAsJsonArray()) {
             GunAttribute attribute = GunAttribute.deserialize(element.getAsJsonObject());
             if (attribute != null) props.attributes.add(attribute);

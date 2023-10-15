@@ -7,7 +7,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import net.smileycorp.dynamic_guns.client.InputHandler;
 import net.smileycorp.dynamic_guns.data.PackLoader;
-import net.smileycorp.dynamic_guns.network.InputMessage;
 import net.smileycorp.dynamic_guns.network.PacketHandler;
 
 @Mod(value = Constants.MODID)

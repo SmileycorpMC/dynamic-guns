@@ -32,8 +32,9 @@ public class MeleeItem extends JsonItem {
         this.disables_shields = disables_shields;
     }
 
-    public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot p_43274_) {
-        return p_43274_ == EquipmentSlot.MAINHAND ? modifiers: super.getDefaultAttributeModifiers(p_43274_);
+    @Override
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
+        return slot == EquipmentSlot.MAINHAND ? modifiers : super.getAttributeModifiers(slot, stack);
     }
 
     @Override

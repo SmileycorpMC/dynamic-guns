@@ -11,7 +11,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkDirection;
-import net.smileycorp.dynamic_guns.DynamicGunsLogger;
 import net.smileycorp.dynamic_guns.gun.FireMode;
 import net.smileycorp.dynamic_guns.item.GunItem;
 import net.smileycorp.dynamic_guns.network.InputMessage;

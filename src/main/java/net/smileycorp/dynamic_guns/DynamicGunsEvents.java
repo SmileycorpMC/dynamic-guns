@@ -11,10 +11,11 @@ public class DynamicGunsEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onDamage(LivingHurtEvent event) {
-        if (event.getEntity() == null || event.getEntity().level().isClientSide) return;
+        Entity entity = event.getEntity();
+        if (entity == null || entity.level().isClientSide) return;
         DamageSource source = event.getSource();
         Entity attacker = source.getDirectEntity();
-        if (attacker instanceof DynamicGunsProjectile) event.setAmount(((DynamicGunsProjectile) attacker).getDamage());
+        if (attacker instanceof DynamicGunsProjectile) event.setAmount(((DynamicGunsProjectile) attacker).getDamage(entity));
     }
 
 }
