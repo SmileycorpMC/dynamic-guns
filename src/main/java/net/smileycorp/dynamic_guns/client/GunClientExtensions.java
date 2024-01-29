@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 public class GunClientExtensions implements IClientItemExtensions {
 
     private GunItemRenderer renderer = null;
-    // Don't instantiate until ready. This prevents race conditions breaking things
+
     @Override
     public BlockEntityWithoutLevelRenderer getCustomRenderer() {
         if (renderer == null) renderer = new GunItemRenderer();
